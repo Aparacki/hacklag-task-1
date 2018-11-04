@@ -12,7 +12,10 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    // CUSTOM
+    "lib": ["es6", "dom"],
+    "outDir": "lib"
   },
   "include": [
     "src"
