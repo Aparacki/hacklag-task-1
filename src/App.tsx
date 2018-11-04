@@ -13,9 +13,15 @@ import calcOuterRec from "./components/utils/CalcRect";
 interface IState {
    imgSrc: string;
    imgSrcExt: string;
-   imgSize: number[];
-   canvas: number[];
-   rotate: number;
+   imgSize: imgSize;
+   angle: number;
+   grayscale: number;
+   pixels: number;
+}
+
+interface imgSize {
+   full: number[];
+   prev: number[];
 }
 
 const imageMaxSize: number = 1000000000; // bytes
@@ -31,18 +37,18 @@ class App extends Component<{}, IState> {
       this.state = {
          imgSrc: "",
          imgSrcExt: "",
-         imgSize: [0, 0],
-         canvas: [0, 0],
-         rotate: 0
+         imgSize: {
+            full: [0, 0],
+            prev: [0, 0]
+         },
+         angle: 0,
+         grayscale: 0,
+         pixels: 0
       };
    }
    private imagePreviewCanvasRef = React.createRef<HTMLCanvasElement>();
+   private imageFullCanvasRef = React.createRef<HTMLCanvasElement>();
    private imageRef = React.createRef<HTMLImageElement>();
-
-   public componentDidMount() {
-      console.log("did mount");
-      this.setState({});
-   }
 
    private verifyFile = (files: any[]) => {
       if (files && files.length > 0) {
@@ -78,8 +84,6 @@ class App extends Component<{}, IState> {
             const myFileItemReader = new FileReader();
             let myResult: any;
             const myImage: any = this.imageRef.current;
-            const canvas: any = this.imagePreviewCanvasRef.current;
-            const ctx: any = canvas.getContext("2d");
 
             myFileItemReader.addEventListener(
                "load",
@@ -88,31 +92,27 @@ class App extends Component<{}, IState> {
                   myImage.src = myResult;
 
                   myImage.onload = () => {
-                     const edge = Math.sqrt(
-                        Math.pow(myImage.naturalWidth, 2) +
-                           Math.pow(myImage.naturalHeight, 2)
-                     );
-                     canvas.width = edge;
-                     canvas.height = edge;
-                     canvas.style.width = "30%"; // show at 50% on screen
-                     canvas.style.height = "30%";
+                     let width = 300;
+                     let height = width * myImage.naturalHeight / myImage.naturalWidth
+                     if(myImage.naturalHeight > myImage.naturalWidth){
+                        height = 300
+                        width = height * myImage.naturalWidth / myImage.naturalHeight
+                     }
+                     const size = {
+                        full:[myImage.naturalWidth, myImage.naturalHeight],
+                        prev:[width, height]
+                     }
 
                      this.setState({
                         imgSrc: myResult,
                         imgSrcExt: extractImageFileExtensionFromBase64(
                            myResult
                         ),
-                        imgSize: [myImage.naturalWidth, myImage.naturalHeight]
+                        imgSize: size
                      });
-                     // console.log(myImage.naturalWidth, myImage.naturalHeight);
-                     ctx.drawImage(
-                        myImage,
-                        (canvas.width - myImage.naturalWidth) / 2,
-                        (canvas.height - myImage.naturalHeight) / 2,
-                        myImage.naturalWidth,
-                        myImage.naturalHeight
-                     );
-                     this.handleChangeRotate()
+
+                     this.setCanvasArea(size.prev);
+                     this.handleCanvas();
                   };
                },
                false
@@ -122,51 +122,87 @@ class App extends Component<{}, IState> {
          }
       }
    };
-   public handleChangeRotate = (e?: any,canvasSize?:number[]) => {
-      // console.log(e.target.value);
-      const { imgSize } = this.state;
-      let degrees = this.state.rotate
-      if(e){
-         console.log('event')
-      degrees = parseInt(e.target.value)
-      }
-      this.setState({ rotate: degrees });
 
-      const myImage: any = this.imageRef.current;
+   public setCanvasArea = (size:number[]) => {
+      const edge = Math.sqrt(size[0] ** 2 + size[1] ** 2);
       const canvas: any = this.imagePreviewCanvasRef.current;
-      const ctx: any = canvas.getContext("2d");
 
-      if(canvasSize){
+      canvas.width = edge;
+      canvas.height = edge;
+      canvas.style.width = "400px"; // show at 50% on screen
+      canvas.style.height = "400px";
+   };
+
+   public handleRotate = (e: any) => {
+      const angle: number = e.target.value;
+      this.setState({ angle }, () => {
+         this.handleCanvas();
+      });
+   };
+
+   public handleGrayscale = (e: any) => {
+      const grayscale = e.target.value;
+      this.setState({ grayscale }, () => {
+         this.handleCanvas();
+      });
+   };
+
+   public handlePixels = () => {
+      const { imgSize, imgSrcExt, angle } = this.state;
+      const boundary = calcOuterRec(angle, imgSize.full[0], imgSize.full[1]);
+      const pixels: number = parseInt((boundary[0] * boundary[1]).toFixed(0));
+      this.setState({ pixels });
+   };
+
+   public handleCanvas = (canvasSize?: number[], fullSize?: boolean) => {
+      const { imgSize, angle, grayscale } = this.state;
+      const myImage: any = this.imageRef.current;
+      let canvas: any = this.imagePreviewCanvasRef.current;     
+      let size = imgSize.prev     
+
+      if (fullSize){
+         size = imgSize.full    
+         canvas = this.imageFullCanvasRef.current;     
+      }
+
+      if (canvasSize) {
          canvas.width = canvasSize[0];
          canvas.height = canvasSize[1];
       }
-      ctx.save(); //saves the state of canvas
+
+      const ctx: any = canvas.getContext("2d");
+
+      this.handlePixels();
+
+      ctx.save(); //saves the state of canvas         
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.rotate((degrees * Math.PI) / 180);
+      ctx.rotate((angle * Math.PI) / 180);
+      ctx.filter = `grayscale(${grayscale}%`;
       ctx.translate(-(canvas.width / 2), -(canvas.height / 2));
       ctx.drawImage(
          myImage,
-         (canvas.width - imgSize[0]) / 2,
-         (canvas.height - imgSize[1]) / 2,
-         imgSize[0],
-         imgSize[1]
-      );
+         (canvas.width - size[0]) / 2,
+         (canvas.height - size[1]) / 2,
+         size[0],
+         size[1]
+      )
       ctx.restore();
+
    };
 
    public handleDownloadClick = (e: any) => {
       e.preventDefault();
-      const {imgSize,  imgSrcExt, rotate } = this.state;
-      const canvas: any = this.imagePreviewCanvasRef.current;
-
+      const { imgSize, imgSrcExt, angle } = this.state;
+      const canvas: any = this.imageFullCanvasRef.current;
       // crop canvas size to fit the image
-      const outerRec = calcOuterRec(rotate, imgSize[0], imgSize[1])
-      this.handleChangeRotate('',outerRec)
-
+      const outerRec = calcOuterRec(angle, imgSize.full[0], imgSize.full[1]);
+      this.setCanvasArea(imgSize.full);
+      this.handleCanvas(outerRec, true);
+      this.setCanvasArea(imgSize.prev);
       const imageData64 = canvas.toDataURL("image/" + imgSrcExt);
       const myFilename = "previewFile." + imgSrcExt;
-
+            this.handleCanvas();
       // file to be uploaded
       const myNewCroppedFile = base64StringtoFile(imageData64, myFilename);
       // console.log(myNewCroppedFile);
@@ -184,7 +220,13 @@ class App extends Component<{}, IState> {
       this.setState({
          imgSrc: "",
          imgSrcExt: "",
-         rotate: 0
+         imgSize: {
+            full: [0, 0],
+            prev: [0, 0]
+         },
+         angle: 0,
+         grayscale: 0,
+         pixels: 0
       });
       // this.fileInputRef.current.value = null
    };
@@ -212,27 +254,41 @@ class App extends Component<{}, IState> {
                         name="cowbell"
                         min="0"
                         max="360"
-                        value={this.state.rotate}
+                        value={this.state.angle}
                         step="2"
-                        onChange={this.handleChangeRotate}
+                        onChange={this.handleRotate}
                      />
                   </label>
+                  <label>
+                     Black and White:
+                     <input
+                        type="range"
+                        id="cowbell"
+                        name="cowbell"
+                        min="0"
+                        max="100"
+                        value={this.state.grayscale}
+                        step="2"
+                        onChange={this.handleGrayscale}
+                     />
+                  </label>
+                  {this.state.pixels}
+                  px
                   <button onClick={this.handleClearToDefault}>Clear</button>
                   <button onClick={this.handleDownloadClick}>Download</button>
-
                </>
             )}
             <canvas
                ref={this.imagePreviewCanvasRef}
                style={{ background: "#ebebeb" }}
             />
+            <canvas
+               ref={this.imageFullCanvasRef}
+               style={{ display: "none" }}
+            />
             <br />
-                              {this.state.rotate}
-                  deg
-            <br />
-            x: {this.state.canvas[0].toFixed(0)}
-            <br />
-            y: {this.state.canvas[1].toFixed(0)}
+            {this.state.angle}
+            deg
             <img ref={this.imageRef} src="" style={{ display: "none" }} />
          </div>
       );
