@@ -58,51 +58,50 @@ class Image extends Component<{}, State> {
             // imageBase64Data
             const currentFile: Blob = files[0];
             const myFileItemReader = new FileReader();
-            const myImage: any = this.imageRef.current;
 
-            myFileItemReader.addEventListener(
-               "load",
-               () => {
-                  const myResult: any = myFileItemReader.result;
-                  myImage.src = myResult;
-
-                  myImage.onload = () => {
-                     // set prev image sizes
-                     let width: number = 300;
-                     let height: number =
-                        (width * myImage.naturalHeight) / myImage.naturalWidth;
-                     if (myImage.naturalHeight > myImage.naturalWidth) {
-                        height = 300;
-                        width =
-                           (height * myImage.naturalWidth) /
-                           myImage.naturalHeight;
-                     }
-
-                     const size: imgSize = {
-                        full: [myImage.naturalWidth, myImage.naturalHeight],
-                        prev: [width, height]
-                     };
-
-                     this.setState({
-                        imgSrc: myResult,
-                        imgSrcExt: extractImageFileExtensionFromBase64(
-                           myResult
-                        ),
-                        imgSize: size,
-                        imgIsLoaded: true
-                     });
-
-                     this.setCanvasArea(size.prev);
-                     this.handleCanvas();
-                  };
-               },
-               false
-            );
+            myFileItemReader.onload = this.loadHandler;
+            myFileItemReader.onerror = this.loadErrorHandler;
 
             myFileItemReader.readAsDataURL(currentFile);
          }
       }
    };
+
+   public loadHandler = (e: any) => {
+      const myImage: any = this.imageRef.current;
+      const myResult: any = e.target.result;
+      myImage.src = myResult;
+
+      myImage.onload = () => {
+         // set prev image sizes
+         let width: number = 300;
+         let height: number =
+            (width * myImage.naturalHeight) / myImage.naturalWidth;
+         if (myImage.naturalHeight > myImage.naturalWidth) {
+            height = 300;
+            width = (height * myImage.naturalWidth) / myImage.naturalHeight;
+         }
+
+         const size: imgSize = {
+            full: [myImage.naturalWidth, myImage.naturalHeight],
+            prev: [width, height]
+         };
+
+         this.setState({
+            imgSrc: myResult,
+            imgSrcExt: extractImageFileExtensionFromBase64(myResult),
+            imgSize: size,
+            imgIsLoaded: true
+         });
+
+         this.setCanvasArea(size.prev);
+         this.handleCanvas();
+      };
+   };
+
+   public loadErrorHandler = (e: any) => {
+      alert('Error while uploading')
+   }
 
    public setCanvasArea = (size: number[]): void => {
       const edge: number = Math.sqrt(size[0] ** 2 + size[1] ** 2);
@@ -223,80 +222,76 @@ class Image extends Component<{}, State> {
       const { imgIsLoaded } = this.state;
       return (
          <>
-               {!imgIsLoaded ? (
-                  <Grid>
-                     <Dropzone
-                        onDrop={this.handleOnDrop}
-                        accept={image.acceptedFileTypes}
-                        multiple={false}
-                        maxSize={image.maxSize}
-                        style={{
-                           width: "400px",
-                           height: "400px",
-                           borderWidth: "2px",
-                           borderColor: 'rgb(102, 102, 102")',
-                           borderStyle: "dashed",
-                           borderRadius: "5px",
-                           background: "#ebebeb"
-                        }}
-                     >
-                        Drop image here or click to upload
-                     </Dropzone>
-                  </Grid>
-               ) : (
-                     <>
-
-                     <canvas
-                        ref={this.imagePreviewCanvasRef}
-                        style={{ background: "#ebebeb" }}
-                     />
-
-                     <Typography id="label">
-                        Rotate {this.state.angle}
-                        deg
-                     </Typography>
-                     <Slider
-                        min={0}
-                        max={360}
-                        value={this.state.angle}
-                        aria-labelledby="label"
-                        step={1}
-                        onChange={this.handleRotate}
-                     />
-
-                     <Typography id="label">Black and White</Typography>
-                     <Slider
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={this.state.grayscale}
-                        aria-labelledby="label"
-                        onChange={this.handleGrayscale}
-                     />
-                     {this.state.pixels.w} x {this.state.pixels.h} ={" "}
-                     {this.state.pixels.size}
-
-                  </>
-               )}
-                  <Button
-                     variant="contained"
-                     color="secondary"
-                     disabled={!imgIsLoaded}
-                     onClick={this.handleClearToDefault}
+            {!imgIsLoaded ? (
+               <Grid>
+                  <Dropzone
+                     onDrop={this.handleOnDrop}
+                     accept={image.acceptedFileTypes}
+                     multiple={false}
+                     maxSize={image.maxSize}
+                     style={{
+                        width: "400px",
+                        height: "400px",
+                        borderWidth: "2px",
+                        borderColor: 'rgb(102, 102, 102")',
+                        borderStyle: "dashed",
+                        borderRadius: "5px",
+                        background: "#ebebeb"
+                     }}
                   >
-                     Clear
-                     <DeleteIcon />
-                  </Button>
+                     Drop image here or click to upload
+                  </Dropzone>
+               </Grid>
+            ) : (
+               <>
+                  <canvas
+                     ref={this.imagePreviewCanvasRef}
+                     style={{ background: "#ebebeb" }}
+                  />
+                  <Typography id="label">
+                     Rotate {this.state.angle}
+                     deg
+                  </Typography>
+                  <Slider
+                     min={0}
+                     max={360}
+                     value={this.state.angle}
+                     aria-labelledby="label"
+                     step={1}
+                     onChange={this.handleRotate}
+                  />
+                  <Typography id="label">Black and White</Typography>
+                  <Slider
+                     min={0}
+                     max={100}
+                     step={1}
+                     value={this.state.grayscale}
+                     aria-labelledby="label"
+                     onChange={this.handleGrayscale}
+                  />
+                  {this.state.pixels.w} x {this.state.pixels.h} ={" "}
+                  {this.state.pixels.size}
+               </>
+            )}
+            <Button
+               variant="contained"
+               color="secondary"
+               disabled={!imgIsLoaded}
+               onClick={this.handleClearToDefault}
+            >
+               Clear
+               <DeleteIcon />
+            </Button>
 
-                  <Button
-                     variant="contained"
-                     color="primary"
-                     disabled={!imgIsLoaded}
-                     onClick={this.handleDownloadClick}
-                  >
-                     Save
-                     <SaveIcon />
-                  </Button>
+            <Button
+               variant="contained"
+               color="primary"
+               disabled={!imgIsLoaded}
+               onClick={this.handleDownloadClick}
+            >
+               Save
+               <SaveIcon />
+            </Button>
             <canvas ref={this.imageFullCanvasRef} style={{ display: "none" }} />
             <img ref={this.imageRef} src="" style={{ display: "none" }} />
          </>
