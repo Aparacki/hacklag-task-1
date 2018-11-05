@@ -4,6 +4,9 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Task 2
+2. Build React App in Typescript where you can upload crime records as CSV, build a table from it and present single crime on a map (http://samplecsvs.s3.amazonaws.com/SacramentocrimeJanuary2006.csv).
+
 ## Available Scripts
 
 In the project directory, you can run:

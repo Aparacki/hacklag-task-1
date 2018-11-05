@@ -223,15 +223,6 @@ class Image extends Component<{}, State> {
       const { imgIsLoaded } = this.state;
       return (
          <>
-            <Grid
-               item
-               xs={4}
-               container
-               spacing={24}
-               alignItems="flex-start"
-               direction="column"
-               justify="center"
-            >
                {!imgIsLoaded ? (
                   <Grid>
                      <Dropzone
@@ -254,13 +245,12 @@ class Image extends Component<{}, State> {
                   </Grid>
                ) : (
                      <>
-                      <Grid>
+
                      <canvas
                         ref={this.imagePreviewCanvasRef}
                         style={{ background: "#ebebeb" }}
                      />
-                     </Grid>
-                     <Grid>
+
                      <Typography id="label">
                         Rotate {this.state.angle}
                         deg
@@ -273,8 +263,7 @@ class Image extends Component<{}, State> {
                         step={1}
                         onChange={this.handleRotate}
                      />
-                     </Grid>
-                     <Grid>
+
                      <Typography id="label">Black and White</Typography>
                      <Slider
                         min={0}
@@ -286,13 +275,9 @@ class Image extends Component<{}, State> {
                      />
                      {this.state.pixels.w} x {this.state.pixels.h} ={" "}
                      {this.state.pixels.size}
-                  </Grid>
+
                   </>
                )}
-               <Grid
-               container
-               spacing={24}
-               justify="flex-start">
                   <Button
                      variant="contained"
                      color="secondary"
@@ -312,8 +297,6 @@ class Image extends Component<{}, State> {
                      Save
                      <SaveIcon />
                   </Button>
-               </Grid>
-            </Grid>
             <canvas ref={this.imageFullCanvasRef} style={{ display: "none" }} />
             <img ref={this.imageRef} src="" style={{ display: "none" }} />
          </>
