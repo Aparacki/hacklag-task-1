@@ -4,6 +4,9 @@ import CrimesTable from "./CrimesTable";
 import CrimesMap from "./CrimesMap";
 import { IState, mapObj } from "./CrimesTypes";
 
+import { verifyFile } from "./utils/Utils";
+import { csv as csvUploadOptions } from "./utils/UploadOptions";
+
 class Crimes extends Component<{}, IState> {
 	constructor(props: {}) {
 		super(props);
@@ -21,17 +24,26 @@ class Crimes extends Component<{}, IState> {
 		};
 	}
 	public handleOnDrop = (files: any[], rejectedFiles: any[]): void => {
-		const currentFile: Blob = files[0];
-		const myFileItemReader = new FileReader();
+		if (rejectedFiles && rejectedFiles.length > 0) {
+			verifyFile(rejectedFiles, csvUploadOptions);
+		}
 
-		myFileItemReader.onload = this.loadHandler;
-		myFileItemReader.onerror = this.loadErrorHandler;
+		if (files && files.length > 0) {
+			const isVerified = verifyFile(files, csvUploadOptions);
+			if (isVerified) {
+				const currentFile: Blob = files[0];
+				console.log(currentFile.type);
+				const myFileItemReader = new FileReader();
 
-		myFileItemReader.readAsText(currentFile);
+				myFileItemReader.onload = this.loadHandler;
+				myFileItemReader.onerror = this.loadErrorHandler;
+
+				myFileItemReader.readAsText(currentFile);
+			}
+		}
 	};
 	public loadHandler = (e: any) => {
 		let csv = e.target.result;
-		// console.log(csv);
 		this.processData(csv);
 	};
 
@@ -94,9 +106,9 @@ class Crimes extends Component<{}, IState> {
 			<>
 				<Dropzone
 					onDrop={this.handleOnDrop}
-					// accept={image.acceptedFileTypes}
+					accept={csvUploadOptions.acceptedFileTypes}
 					multiple={false}
-					// maxSize={image.maxSize}
+					maxSize={csvUploadOptions.maxSize}
 					style={{
 						width: "400px",
 						height: "400px",
@@ -108,21 +120,17 @@ class Crimes extends Component<{}, IState> {
 					}}
 				>
 					Drop CSV
-				</Dropzone>{" "}
+				</Dropzone>
 				{table.length > 0 ? (
-						<CrimesTable
-							headers={headers}
-							table={table}
-							onRowClick={this.onRowClick}
-						/>
+					<CrimesTable
+						headers={headers}
+						table={table}
+						onRowClick={this.onRowClick}
+					/>
 				) : (
 					<span>no loaded</span>
 				)}
-				{mapObj.setMarker ? (
-					<CrimesMap coords={mapObj.coords} />
-				) : (
-					<></>
-				)}
+				<CrimesMap mapObj={mapObj} />
 			</>
 		);
 	}

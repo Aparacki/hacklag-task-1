@@ -1,20 +1,23 @@
-import * as image from "./ImageUploadOptions";
+import {Options} from "./Types"
 
-export function verifyFile(files: any[]) {
+export function verifyFile(files: any[], options: Options) {
     if (files && files.length > 0) {
         const currentFile: any = files[0];
         const currentFileType: string = currentFile.type;
         const currentFileSize: number = currentFile.size;
-        if (currentFileSize > image.maxSize) {
+        if (currentFileSize > options.maxSize) {
             alert(
                 "This file is not allowed. " +
                     currentFileSize +
-                    " bytes is too large. Max image size is " + image.maxSize
+                    " bytes is too large. Max file size is " + options.maxSize
             );
             return false;
         }
-        if (!image.acceptedFileTypesArray.includes(currentFileType)) {
-            alert("This file is not allowed. Only images are allowed.");
+        const acceptedFileTypesArray: any = options.acceptedFileTypes.split(",").map(item => {
+            return item.trim();
+        })
+        if (!acceptedFileTypesArray.includes(currentFileType)) {
+            alert("This file is not allowed");
             return false;
         }
         return true;

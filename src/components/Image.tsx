@@ -8,7 +8,7 @@ import {
    image64toCanvasRef
 } from "./utils/ImageUtils";
 import { calcOuterRec, verifyFile } from "./utils/Utils";
-import * as image from "./utils/ImageUploadOptions";
+import {image as imageUploadOptions } from "./utils/UploadOptions"
 
 import { State, imgSize } from "./types";
 
@@ -49,11 +49,11 @@ class Image extends Component<{}, State> {
 
    public handleOnDrop = (files: any[], rejectedFiles: any[]): void => {
       if (rejectedFiles && rejectedFiles.length > 0) {
-         verifyFile(rejectedFiles);
+         verifyFile(rejectedFiles, imageUploadOptions);
       }
 
       if (files && files.length > 0) {
-         const isVerified = verifyFile(files);
+         const isVerified = verifyFile(files, imageUploadOptions);
          if (isVerified) {
             // imageBase64Data
             const currentFile: Blob = files[0];
@@ -226,9 +226,9 @@ class Image extends Component<{}, State> {
                <Grid>
                   <Dropzone
                      onDrop={this.handleOnDrop}
-                     accept={image.acceptedFileTypes}
+                     accept={imageUploadOptions.acceptedFileTypes}
                      multiple={false}
-                     maxSize={image.maxSize}
+                     maxSize={imageUploadOptions.maxSize}
                      style={{
                         width: "400px",
                         height: "400px",

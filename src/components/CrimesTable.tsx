@@ -19,7 +19,7 @@ const CrimesTable: SFC<Props> = ({ headers, table, onRowClick}) => (
 		onRowClick={onRowClick}
 	>
 		{headers.map((el, i) => {
-			return <Column width={200} label={el} dataKey={el} />;
+			return <Column key={i} width={200} label={el} dataKey={el} />;
 		})}
 	</Table>
 )
