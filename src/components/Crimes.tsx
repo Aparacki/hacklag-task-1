@@ -1,14 +1,8 @@
 import React, { Component } from "react";
 import Dropzone from "react-dropzone";
-import { List } from "react-virtualized";
-import { Column, Table } from "react-virtualized";
-import "react-virtualized/styles.css";
-
-interface IState {
-	table: any[];
-	headers: string[];
-	loaded: boolean;
-}
+import CrimesTable from "./CrimesTable";
+import CrimesMap from "./CrimesMap";
+import { IState, mapObj } from "./CrimesTypes";
 
 class Crimes extends Component<{}, IState> {
 	constructor(props: {}) {
@@ -16,7 +10,14 @@ class Crimes extends Component<{}, IState> {
 		this.state = {
 			table: [],
 			headers: [],
-			loaded: false
+			loaded: false,
+			mapObj: {
+				coords: {
+					lat: 0,
+					lng: 0
+				},
+				setMarker: false
+			}
 		};
 	}
 	public handleOnDrop = (files: any[], rejectedFiles: any[]): void => {
@@ -39,10 +40,8 @@ class Crimes extends Component<{}, IState> {
 	public processData = (csv: any) => {
 		let allTextLines = csv.split(/\r|\n|\r/);
 		let headers = allTextLines[0].split(",");
-		this.setState({
-			headers
-		});
 		let csvArray = [];
+
 		for (let i = 1; i < allTextLines.length; i++) {
 			// for (let i = 1; i < 30; i++) {
 			// split content based on comma
@@ -57,23 +56,40 @@ class Crimes extends Component<{}, IState> {
 				csvArray.push(dataObj);
 			}
 		}
-		console.log("loaded");
 		this.setState({
-			table: csvArray
+			table: csvArray,
+			headers
 		});
 	};
-	public onRowClick = ({ event, index, rowData }:{ event: React.MouseEvent<any>, index: number, rowData: any }): any => {
-		// console.log(event)
-		// console.log(index)
-		console.log(rowData.latitude)
-		console.log(rowData.longitude)
-	}
+	public onRowClick = ({
+		event,
+		index,
+		rowData
+	}: {
+		event: React.MouseEvent<any>;
+		index: number;
+		rowData: any;
+	}): any => {
+		const lat = parseFloat(rowData.latitude);
+		const lng = parseFloat(rowData.longitude);
+		this.setState({
+			mapObj: {
+				coords: {
+					lat,
+					lng
+				},
+				setMarker: true
+			}
+		});
+		// console.log(rowData.latitude)
+		// console.log(rowData.longitude)
+	};
 
 	public render(): JSX.Element {
 		const listHeight = 300;
 		const rowHeight = 20;
 		const rowWidth = 300;
-		const { table, headers } = this.state;
+		const { table, headers, mapObj } = this.state;
 		return (
 			<>
 				<Dropzone
@@ -92,32 +108,20 @@ class Crimes extends Component<{}, IState> {
 					}}
 				>
 					Drop CSV
-				</Dropzone>
+				</Dropzone>{" "}
 				{table.length > 0 ? (
-					<>
-						<Table
-							width={800}
-							height={300}
-							headerHeight={20}
-							rowHeight={30}
-							rowCount={table.length}
-							rowGetter={({ index }) => table[index]}
+						<CrimesTable
+							headers={headers}
+							table={table}
 							onRowClick={this.onRowClick}
-						>
-							{headers.map((el,i) => {
-								return (
-									<Column
-										width={200}
-										label={el}
-										dataKey={el}
-									/>
-								);
-							})}
-						</Table>
-						,<span>loaded</span>
-					</>
+						/>
 				) : (
 					<span>no loaded</span>
+				)}
+				{mapObj.setMarker ? (
+					<CrimesMap coords={mapObj.coords} />
+				) : (
+					<></>
 				)}
 			</>
 		);
