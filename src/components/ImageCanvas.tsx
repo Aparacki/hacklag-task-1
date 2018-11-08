@@ -13,28 +13,11 @@ import { withStyles } from "@material-ui/core/styles";
 import SaveIcon from "@material-ui/icons/Save";
 import DeleteIcon from "@material-ui/icons/Delete";
 
-import { ImageState as ImageProps } from "./ImageTypes";
-
-export interface imgSize {
-   full: number[];
-   prev: number[];
-}
-interface pixels {
-   w: number;
-   h: number;
-   size: number;
-}
-
-interface State {
-   prevSize: number[];
-   angle: number;
-   grayscale: number;
-   pixels: pixels;
-   imgIsLoaded: boolean;
-}
+import { ImageCanvasState as State, ImageState as ImageProps } from "./ImageTypes";
 
 interface Props {
    img: ImageProps;
+   imgRef:any;
 }
 
 class ImageCanvas extends Component<Props, State> {
@@ -49,16 +32,14 @@ class ImageCanvas extends Component<Props, State> {
             h: 0,
             size: 0
          },
-         imgIsLoaded: false
       };
    }
 
    private previewCanvasRef = React.createRef<HTMLCanvasElement>();
    private fullCanvasRef = React.createRef<HTMLCanvasElement>();
-   private imageRef = React.createRef<HTMLImageElement>();
 
    public componentDidMount = () => {
-            console.log('didmount')
+            console.log('__canvas didmount')
       const { img } = this.props;
       let width: number = 300;
       let height: number = (width * img.imgSize[1]) / img.imgSize[0];
@@ -66,17 +47,24 @@ class ImageCanvas extends Component<Props, State> {
          height = 300;
          width = (height * img.imgSize[0]) / img.imgSize[1];
       }
-      console.log();
+      const pixels = this.handlePixels()
       this.setState({
-         prevSize: [width, height]
+         prevSize: [width, height],
+         pixels
       });
 
       this.setCanvasArea(this.previewCanvasRef, [width, height]);
-      this.handleCanvas(this.previewCanvasRef, this.imageRef);
+
    };
+
    public componentDidUpdate = ():void => {
-      console.log('didupdate')
-      this.handleCanvas(this.previewCanvasRef, this.imageRef);
+      console.log('__canvas didupdate')
+      this.handleCanvas(this.previewCanvasRef);
+   }
+
+   public componentWillUnmount = () => {
+      console.log('__canvas wil unmount')
+      this.handleClearToDefault()
    }
 
    public setCanvasArea = (canvasRef: any, size: number[]): void => {
@@ -89,17 +77,17 @@ class ImageCanvas extends Component<Props, State> {
       canvas.style.height = "400px";
    };
 
-   public handleRotate = (e: any, value: number): void => {
-      this.setState({ angle: value }, () => {});
+   public handleRotate = (e: any, angle: number): void => {
+      const pixels = this.handlePixels(angle)
+      this.setState({ angle,pixels},() => {});
    };
 
    public handleGrayscale = (e: any, value: number): void => {
       this.setState({ grayscale: value }, () => {});
    };
 
-   public handlePixels = (): void => {
+   public handlePixels = (angle:number=360): {w:number,h:number,size:number} => {
       const { img } = this.props;
-      const { angle } = this.state;
       const boundary = calcOuterRec(angle, img.imgSize[0], img.imgSize[1]);
       const pixels = {
          w: parseInt(boundary[0].toFixed(0)),
@@ -107,18 +95,15 @@ class ImageCanvas extends Component<Props, State> {
          size: parseInt((boundary[0] * boundary[1]).toFixed(0))
       };
 
-      this.setState({ pixels });
+      return pixels
    };
 
-   public handleCanvas = (canvasRef: any, imageRef: any): void => {
-            console.log('handle canvas')
+   public handleCanvas = (canvasRef: any): void => {
+            console.log('__canvas handle')
       const { prevSize, angle, grayscale } = this.state;
-      // console.log('draw canvas ', canvas)
-      // console.log('draw canvas ', myImage)
-      // console.log('widx x height ', canvas.width , ' x ', canvas.height)
-      // console.log('draw canvas ', myImage)
+
       const canvas = canvasRef.current;
-      const myImage = imageRef.current;
+      const myImage = this.props.imgRef.current;
 
       const ctx: any = canvas.getContext("2d");
 
@@ -139,7 +124,7 @@ class ImageCanvas extends Component<Props, State> {
    };
 
    public handleDownloadClick = (e: any): void => {
-      e.preventDefault();
+      // e.preventDefault();
       // const { imgSize, imgSrcExt, angle } = this.state;
       // const canvas: any = this.fullCanvasRef.current;
       // // crop canvas size to fit the image
@@ -172,17 +157,14 @@ class ImageCanvas extends Component<Props, State> {
             h: 0,
             size: 0
          },
-         imgIsLoaded: false
       });
-      // this.fileInputRef.current.value = null
    };
 
    public render(): JSX.Element {
-      const { imgIsLoaded } = this.state;
       return (
          <>
             <>
-            {      console.log('render')}
+            {      console.log('__canvas render')}
                <canvas
                   ref={this.previewCanvasRef}
                   style={{ background: "green" }}
@@ -202,7 +184,6 @@ class ImageCanvas extends Component<Props, State> {
             <Button
                variant="contained"
                color="secondary"
-               disabled={!imgIsLoaded}
                onClick={this.handleClearToDefault}
             >
                Clear
@@ -211,18 +192,13 @@ class ImageCanvas extends Component<Props, State> {
             <Button
                variant="contained"
                color="primary"
-               disabled={!imgIsLoaded}
                onClick={this.handleDownloadClick}
             >
                Save
                <SaveIcon />
             </Button>
             <canvas ref={this.fullCanvasRef} style={{ display: "none" }} />
-            <img
-               ref={this.imageRef}
-               src={this.props.img.imgSrc}
-               style={{ display: "none" }}
-            />
+
          </>
       );
    }

@@ -3,6 +3,7 @@ import Dropzone from "react-dropzone";
 import { Options } from "./utils/Types";
 import { uploadOptions } from "./FiledropUploadOptions";
 
+// Components to be rendered
 import Image from "./Image";
 import Crimes from "./Crimes";
 
@@ -11,6 +12,7 @@ interface State {
    acceptedMaxFileSize: number;
    uploadedFile: string;
    uploadedFileType: string;
+   isLoaded: boolean;
 }
 class Dropfile extends Component<{}, State> {
    constructor(props: {}) {
@@ -19,38 +21,42 @@ class Dropfile extends Component<{}, State> {
          acceptedFileTypes: "",
          acceptedMaxFileSize: 0,
          uploadedFile: "",
-         uploadedFileType: ""
+         uploadedFileType: "",
+         isLoaded: false
       };
    }
 
    public componentDidMount() {
-      this.acceptedMaxFileSize();
-      this.acceptedFileTypes();
-      console.log(this.state);
+      const acceptedFileTypes: string = this.acceptedFileTypes();
+      const acceptedMaxFileSize: number = this.acceptedMaxFileSize();
+      this.setState({
+         acceptedFileTypes,
+         acceptedMaxFileSize
+      });
    }
 
    public componentDidUpdate() {
-      console.log(this.state);
+      console.log("DROPFILE DID UPDATE");
    }
-
-   public acceptedFileTypes = () => {
+   //set accepted file types
+   public acceptedFileTypes = (): string => {
       const uploadFileTypes = uploadOptions.map(el => {
          return el.acceptedFileTypes;
       });
-      this.setState({
-         acceptedFileTypes: uploadFileTypes.join()
-      });
+      return uploadFileTypes.join();
       // console.log(uploadFileTypes.join())
    };
-   public acceptedMaxFileSize = () => {
+
+   //set accepted file size
+   public acceptedMaxFileSize = (): number => {
       const uploadFileSizes = uploadOptions.map(el => {
          return el.maxSize;
       });
-      this.setState({
-         acceptedMaxFileSize: Math.max(...uploadFileSizes)
-      });
+      return Math.max(...uploadFileSizes);
       // console.log(uploadFileTypes.join())
    };
+
+   //verify if file fits requirements
    public verifyFile = (files: any[]): boolean => {
       const { acceptedFileTypes, acceptedMaxFileSize } = this.state;
 
@@ -59,7 +65,7 @@ class Dropfile extends Component<{}, State> {
          const currentFileType: string = currentFile.type;
          const currentFileSize: number = currentFile.size;
 
-         // verifying size
+         // verify size
          if (currentFileSize > acceptedMaxFileSize) {
             alert(
                "This file is not allowed. " +
@@ -70,7 +76,7 @@ class Dropfile extends Component<{}, State> {
             return false;
          }
 
-         //verifyin type
+         //verify type
          ////nie wiem dlaczego include nie działa na typie :string[]
          const acceptedFileTypesArray: any = acceptedFileTypes
             .split(",")
@@ -82,37 +88,46 @@ class Dropfile extends Component<{}, State> {
             alert("This file is not allowed");
             return false;
          }
-         this.setState({ uploadedFileType: currentFileType });
+         // this.setState({ uploadedFileType: currentFileType });
          return true;
       }
       return false;
    };
 
+   //create file
    public handleOnDrop = (files: any[], rejectedFiles: any[]): void => {
-      if (rejectedFiles && rejectedFiles.length > 0) {
+      this.setState({
+         isLoaded:false
+      })
+      if (rejectedFiles && rejectedFiles.length > 0)
          this.verifyFile(rejectedFiles);
-         console.log("rejected");
-      }
 
       if (files && files.length > 0) {
          const isVerified = this.verifyFile(files);
          if (isVerified) {
-            console.log("trure if verifed");
             const currentFile: Blob = files[0];
             var reader = new FileReader();
 
             reader.readAsDataURL(currentFile);
-            reader.onload = this.loadHandler;
-            reader.onerror = this.loadErrorHandler;
+
+            reader.onload = (e: ProgressEvent | any) => {
+               const uploadedFile = e.target.result;
+               const uploadedFileType = files[0].type;
+               this.setState({
+                  uploadedFile,
+                  uploadedFileType,
+                  isLoaded:true
+               });
+            };
+            reader.onerror = function(e) {
+               alert("Error while uploading");
+            };
          }
       }
    };
-   public loadHandler = (e: ProgressEvent | any) => {
-      // this.renderCorrespondingComponent();
-      // console.log(e.target.result)
-   };
 
-   public setCorrespondingComponent = (): string => {
+   //return "name" file from options to decide which component should be rendered
+   public suitableFileTypeComponent = (): string => {
       const { uploadedFileType } = this.state;
 
       function filterByID(item: any) {
@@ -122,20 +137,26 @@ class Dropfile extends Component<{}, State> {
                return item.trim();
             });
 
-         if (acceptedFileTypes.includes(uploadedFileType)) {
-            return true;
-         }
+         if (acceptedFileTypes.includes(uploadedFileType)) return true;
       }
       const uploadFileType: any = uploadOptions.filter(filterByID);
 
       return uploadFileType[0].name;
    };
 
-   public loadErrorHandler = (e: any) => {
-      alert("Error while uploading");
+   public handleClearToDefault = (): void => {
+      // if (e) e.preventDefault()
+      this.setState({
+         acceptedFileTypes: "",
+         acceptedMaxFileSize: 0,
+         uploadedFile: "",
+         uploadedFileType: "",
+      });
+      // this.fileInputRef.current.value = null
    };
 
    public render(): JSX.Element {
+      const { uploadedFile, uploadedFileType, isLoaded } = this.state;
       return (
          <>
             {this.state.acceptedFileTypes ? (
@@ -146,8 +167,8 @@ class Dropfile extends Component<{}, State> {
                      multiple={false}
                      maxSize={this.state.acceptedMaxFileSize}
                      style={{
-                        width: "400px",
-                        height: "400px",
+                        width: "200px",
+                        height: "200px",
                         borderWidth: "2px",
                         borderColor: 'rgb(102, 102, 102")',
                         borderStyle: "dashed",
@@ -155,13 +176,18 @@ class Dropfile extends Component<{}, State> {
                         background: "#ebebeb"
                      }}
                   >
-                     Drop image here or click to upload
+                     Drop image or csv file here or click to upload
                   </Dropzone>
-                  {this.state.uploadedFileType
+                  {isLoaded
                      ? (() => {
-                          switch (this.setCorrespondingComponent()) {
+                          switch (this.suitableFileTypeComponent()) {
                              case "image":
-                                return <Image />;
+                                return (
+                                   <Image
+                                      imgSrc={uploadedFile}
+                                      imgSrcExt={uploadedFileType}
+                                   />
+                                );
                              case "csv":
                                 return <Crimes />;
                              default:
