@@ -32,22 +32,21 @@ class Crimes extends Component<{}, IState> {
 			const isVerified = verifyFile(files, csvUploadOptions);
 			if (isVerified) {
 				const currentFile: Blob = files[0];
-				console.log(currentFile.type);
 				const myFileItemReader = new FileReader();
-
+				// throw new Error('Required')
 				myFileItemReader.onload = this.loadHandler;
-				myFileItemReader.onerror = this.loadErrorHandler;
-
 				myFileItemReader.readAsText(currentFile);
 			}
 		}
 	};
+
 	public loadHandler = (e: any) => {
 		let csv = e.target.result;
 		this.processData(csv);
 	};
 
-	public loadErrorHandler = (e: any) => {};
+	public loadErrorHandler = (e: any) => {
+	};
 
 	public processData = (csv: any) => {
 		let allTextLines = csv.split(/\r|\n|\r/);
@@ -98,9 +97,6 @@ class Crimes extends Component<{}, IState> {
 	};
 
 	public render(): JSX.Element {
-		const listHeight = 300;
-		const rowHeight = 20;
-		const rowWidth = 300;
 		const { table, headers, mapObj } = this.state;
 		return (
 			<>
