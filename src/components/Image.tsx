@@ -117,10 +117,7 @@ class Image extends Component<{}, State> {
                   <ImageCanvas  img={this.state} /> 
                   :
                   ''
-               }
-               
-
-              
+               }             
             )}
            
             <img ref={this.imageRef} src="" style={{ display: "none" }} />

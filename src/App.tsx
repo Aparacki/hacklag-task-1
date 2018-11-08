@@ -1,4 +1,5 @@
 import React from "react";
+import Dropfile from "./components/Dropfile";
 import Image from "./components/Image";
 import Crimes from "./components/Crimes";
 import Navigation from "./components/Navigation";
@@ -10,6 +11,7 @@ const App: React.SFC = () => {
       <>
       <Navigation />
       <Switch>
+        <Route path="/" exac component={Dropfile} />
         <Route path="/task1" component={Image} />
         <Route path="/task2" component={Crimes} />
         </Switch>
