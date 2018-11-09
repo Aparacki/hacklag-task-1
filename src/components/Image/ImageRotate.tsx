@@ -1,7 +1,8 @@
 import React, { SFC, ReactNode } from "react";
 import Typography from "@material-ui/core/Typography";
+import Grid from "@material-ui/core/Grid";
 import Slider from "@material-ui/lab/Slider";
-
+import "../../App.css"
 
 interface Props {
 	value:number;
@@ -14,7 +15,7 @@ const ImageRotate: SFC<Props> = ({ value, onChange }) => (
 			Rotate 
 			deg
 		</Typography>
-		<Slider
+		<Slider className="slider"
 			min={0}
 			max={360}
 			value={value}

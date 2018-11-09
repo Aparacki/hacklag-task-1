@@ -9,7 +9,7 @@ interface Props {
 
 
 const CrimesMap: SFC<Props>= ({ props }) => (
-	<div style={{ height: "400px", width: "400px" }}>
+	<div style={{ height: "400px", width: "100%" }}>
 		{props.setMarker ? (
 			<GoogleMapReact
 				bootstrapURLKeys={{

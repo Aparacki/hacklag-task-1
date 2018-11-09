@@ -2,10 +2,13 @@ import React, { Component } from "react";
 import Dropzone from "react-dropzone";
 import CrimesTable from "./CrimesTable";
 import CrimesMap from "./CrimesMap";
-import {
-	CrimeState as State,
-	CrimeProps as Props
-} from "./typesCrimes";
+import { CrimeState as State, CrimeProps as Props } from "./typesCrimes";
+
+// css
+import Grid from "@material-ui/core/Grid";
+import Button from "@material-ui/core/Button";
+import Icon from "@material-ui/core/Icon";
+import DeleteIcon from "@material-ui/icons/Delete";
 
 class Crimes extends Component<Props, State> {
 	constructor(props: Props) {
@@ -13,6 +16,7 @@ class Crimes extends Component<Props, State> {
 		this.state = {
 			table: [],
 			headers: [],
+			headersLength:0,
 			loaded: false,
 			mapObj: {
 				coords: {
@@ -32,6 +36,8 @@ class Crimes extends Component<Props, State> {
 	public processData = (csv: any) => {
 		let allTextLines = csv.split(/\r|\n|\r/);
 		let headers = allTextLines[0].split(",");
+		let headersLength = headers.join('').length
+		console.log(headersLength)
 		let csvArray = [];
 
 		for (let i = 1; i < allTextLines.length; i++) {
@@ -50,7 +56,8 @@ class Crimes extends Component<Props, State> {
 		}
 		this.setState({
 			table: csvArray,
-			headers
+			headers,
+			headersLength
 		});
 	};
 
@@ -94,6 +101,7 @@ class Crimes extends Component<Props, State> {
 		this.setState({
 			table: [],
 			headers: [],
+			headersLength:0,
 			loaded: false,
 			mapObj: {
 				coords: {
@@ -105,18 +113,46 @@ class Crimes extends Component<Props, State> {
 		});
 	};
 
-	public render(): JSX.Element {
-		const { table, headers, mapObj } = this.state;
-		return (
-			<>
-				<CrimesTable
-					headers={headers}
-					table={table}
-					onRowClick={this.onRowClick}
-				/>
+	public mapReset = (): void => {
+		this.setState({
+			mapObj: {
+				coords: {
+					lat: 0,
+					lng: 0
+				},
+				setMarker: false
+			}
+		});
+	};
 
-				<CrimesMap props={mapObj} />
-			</>
+	public render(): JSX.Element {
+		const { table, headers, mapObj, headersLength } = this.state;
+		return (
+			<Grid container spacing={24}>
+				<Grid item xs={12}>
+					<CrimesTable
+						headers={headers}
+						headersLength={headersLength}
+						tableWidth={1000}
+						table={table}
+						onRowClick={this.onRowClick}
+					/>
+				</Grid>
+				<Grid item xs={12}>
+					<CrimesMap props={mapObj} />
+				</Grid>
+				<Grid item xs={12}>
+                        <Button
+                           variant="contained"
+                           color="secondary"
+                           fullWidth={true}
+                           onClick={this.mapReset}
+                        >
+                           Clear map
+                           <DeleteIcon />
+                        </Button>
+				</Grid>
+			</Grid>
 		);
 	}
 }

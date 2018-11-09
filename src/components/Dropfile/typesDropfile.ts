@@ -3,5 +3,6 @@ export interface DropfileState {
    acceptedMaxFileSize: number;
    uploadedFile: string;
    uploadedMimeType: string;
+   dropZoneText:string;
    isLoaded: boolean;
 }

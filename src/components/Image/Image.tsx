@@ -74,7 +74,7 @@ class Image extends Component<Props, State> {
                   </ImageCanvas>
                </>
             ) : null}
-            )}
+
             <canvas ref={this.fullCanvasRef} style={{ display: "none" }} />
             <img
                ref={this.imageRef}

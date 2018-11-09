@@ -12,7 +12,7 @@ export interface ImageCanvasState {
    prevSize: number[];
    angle: number;
    grayscale: number;
-   pixels: pixels;
+   pixels: Pixels;
 }
 
 export interface ImageCanvasProps {
@@ -22,7 +22,7 @@ export interface ImageCanvasProps {
    handleDownload():void
 }
 
-interface pixels {
+export interface Pixels {
    w: number;
    h: number;
    size: number;

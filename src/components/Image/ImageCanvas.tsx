@@ -4,12 +4,12 @@ import { calcCropRec, calcPrevImgSize } from "./utils/imageCanvasUtils";
 
 import ImageRotate from "./ImageRotate";
 import ImageGrayscale from "./ImageGrayscale";
+import ImagePixels from "./ImagePixels";
 
 // css
 import Button from "@material-ui/core/Button";
 import Icon from "@material-ui/core/Icon";
 import Grid from "@material-ui/core/Grid";
-import { withStyles } from "@material-ui/core/styles";
 import SaveIcon from "@material-ui/icons/Save";
 import DeleteIcon from "@material-ui/icons/Delete";
 
@@ -53,10 +53,10 @@ class ImageCanvas extends Component<Props, State> {
    };
 
    public componentWillUnmount = () => {
-      this.handleReset();
+      this.handleClearToDefault();
    };
 
-// set max area to draw
+   // set max area to draw
    public setCanvasArea = (canvasRef: any, size?: number[]): void => {
       if (!size) size = this.state.prevSize;
       const edge: number = Math.sqrt(size[0] ** 2 + size[1] ** 2);
@@ -64,24 +64,23 @@ class ImageCanvas extends Component<Props, State> {
 
       canvas.width = edge;
       canvas.height = edge;
-      canvas.style.width = "200px";
-      canvas.style.height = "200px";
+      canvas.style.width = "100%";
+      canvas.style.height = "auto";
    };
 
    public handleRotate = (e: any, angle: number): void => {
-      const pixels = this.handlePixels(angle)
-      this.setState({ angle, pixels },);
+      const pixels = this.handlePixels(angle);
+      this.setState({ angle, pixels });
    };
 
    public handleGrayscale = (e: any, grayscale: number): void => {
       this.setState({ grayscale });
    };
 
-// calculate size of fullsize image 
+   // calculate size of fullsize image
    public handlePixels = (
       angle: number = 360
    ): { w: number; h: number; size: number } => {
-
       const { img } = this.props;
       const boundary = calcCropRec(angle, img.imgSize[0], img.imgSize[1]);
       const pixels = {
@@ -93,15 +92,16 @@ class ImageCanvas extends Component<Props, State> {
       return pixels;
    };
 
-// draw canvas
-   public handleCanvas = (canvasRef: any, size?: number[]): void => {
+   // draw canvas
+   public handleCanvas = (canvasRef: any, fullsize?: boolean): void => {
       const { prevSize, angle, grayscale } = this.state;
-      // if (size) {
-      //    console.log("__canvas handle fullsize");
-      // } else {
-      //    console.log("__canvas handle");
-      // }
-      if (!size) size = prevSize;
+      let size = prevSize;
+      if (fullsize) {
+         size = this.props.img.imgSize;
+         console.log("__canvas handle fullsize");
+      } else {
+         console.log("__canvas handle");
+      }
 
       const canvas = canvasRef.current;
       const myImage = this.props.imgRef.current;
@@ -123,7 +123,7 @@ class ImageCanvas extends Component<Props, State> {
       ctx.restore();
    };
 
-// draw fullSize canvas
+   // draw fullSize canvas
    public handleFullsizeCanvas = (): void => {
       const { angle, grayscale } = this.state;
       const { img, fullCanvasRef } = this.props;
@@ -133,7 +133,7 @@ class ImageCanvas extends Component<Props, State> {
          img.imgSize[1]
       );
       this.setCanvasArea(fullCanvasRef, canvasSize);
-      this.handleCanvas(fullCanvasRef, canvasSize);
+      this.handleCanvas(fullCanvasRef, true);
    };
 
    public handleDownload = (): void => {
@@ -141,10 +141,10 @@ class ImageCanvas extends Component<Props, State> {
       this.props.handleDownload();
    };
 
-   public handleReset = (): void => {
+   public handleClearToDefault = (): void => {
       const canvas: any = this.previewCanvasRef.current;
       const ctx = canvas.getContext("2d");
-      const pixels = this.handlePixels()
+      const pixels = this.handlePixels();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       this.setState({
@@ -157,39 +157,55 @@ class ImageCanvas extends Component<Props, State> {
    public render(): JSX.Element {
       return (
          <>
-            <>
-               <canvas
-                  ref={this.previewCanvasRef}
-                  style={{ background: "green" }}
-               />
-               <ImageRotate
-                  value={this.state.angle}
-                  onChange={this.handleRotate}
-               />
-               <ImageGrayscale
-                  value={this.state.grayscale}
-                  onChange={this.handleGrayscale}
-               />
-               {this.state.pixels.w} x {this.state.pixels.h} ={" "}
-               {this.state.pixels.size}
-            </>
-            
-            <Button
-               variant="contained"
-               color="secondary"
-               onClick={this.handleReset}
-            >
-               Reset to default
-               <DeleteIcon />
-            </Button>
-            <Button
-               variant="contained"
-               color="primary"
-               onClick={this.handleDownload}
-            >
-               Save
-               <SaveIcon />
-            </Button>
+            <Grid container spacing={24}>
+               <Grid item xs={12} sm={6}>
+                  <canvas
+                     ref={this.previewCanvasRef}
+                     style={{ background: "#ebebeb" }}
+                  />
+               </Grid>
+               <Grid item xs={12} sm={6}>
+                  <Grid container spacing={24}>
+                     <Grid item xs={12}>
+                        <ImageRotate
+                           value={this.state.angle}
+                           onChange={this.handleRotate}
+                        />
+                     </Grid>
+                     <Grid item xs={12}>
+                        <ImageGrayscale
+                           value={this.state.grayscale}
+                           onChange={this.handleGrayscale}
+                        />
+                     </Grid>
+                     <Grid item xs={12}>
+                        <ImagePixels value={this.state.pixels} />
+                     </Grid>
+                     <Grid item xs={12}>
+                        <Button
+                           variant="contained"
+                           color="secondary"
+                           fullWidth={true}
+                           onClick={this.handleClearToDefault}
+                        >
+                           Reset
+                           <DeleteIcon />
+                        </Button>
+                     </Grid>
+                     <Grid item xs={12}>
+                        <Button
+                           variant="contained"
+                           color="primary"
+                           fullWidth={true}
+                           onClick={this.handleDownload}
+                        >
+                           Download
+                           <SaveIcon />
+                        </Button>
+                     </Grid>
+                  </Grid>
+               </Grid>
+            </Grid>
          </>
       );
    }

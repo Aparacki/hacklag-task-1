@@ -15,7 +15,8 @@
     "jsx": "preserve",
     // CUSTOM
     "lib": ["es6", "dom"],
-    "outDir": "lib"
+    "outDir": "lib",
+    "noImplicitAny": true,
   },
   "include": [
     "src"

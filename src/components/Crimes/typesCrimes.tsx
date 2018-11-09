@@ -1,6 +1,7 @@
 export interface CrimeState {
 	table: any[];
 	headers: string[];
+	headersLength:number;
 	loaded: boolean;
 	mapObj: Map;
 }
