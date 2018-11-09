@@ -2,15 +2,12 @@ import React, { Component } from "react";
 import Dropzone from "react-dropzone";
 import CrimesTable from "./CrimesTable";
 import CrimesMap from "./CrimesMap";
-import { IState, mapObj } from "./CrimesTypes";
+import {
+	CrimeState as State,
+	CrimeProps as Props
+} from "./typesCrimes";
 
-import { csv as csvUploadOptions } from "./utils/UploadOptions";
-
-interface Props {
-	csvSrc: any;
-	csvType: any;
-}
-class Crimes extends Component<Props, IState> {
+class Crimes extends Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 		this.state = {
@@ -26,12 +23,11 @@ class Crimes extends Component<Props, IState> {
 			}
 		};
 	}
-   public componentDidMount = () => {
-      // console.log("_csv did update")
-      const {csvSrc} = this.props
-      console.log(csvSrc)
-      this.processData(csvSrc);
-   };
+	public componentDidMount = () => {
+		const { csvSrc } = this.props;
+		this.processData(csvSrc);
+		console.log("_csv did update");
+	};
 
 	public processData = (csv: any) => {
 		let allTextLines = csv.split(/\r|\n|\r/);
@@ -57,6 +53,7 @@ class Crimes extends Component<Props, IState> {
 			headers
 		});
 	};
+
 	public onRowClick = ({
 		event,
 		index,
@@ -68,6 +65,7 @@ class Crimes extends Component<Props, IState> {
 	}): any => {
 		const lat = parseFloat(rowData.latitude);
 		const lng = parseFloat(rowData.longitude);
+
 		this.setState({
 			mapObj: {
 				coords: {
@@ -80,6 +78,32 @@ class Crimes extends Component<Props, IState> {
 		// console.log(rowData.latitude)
 		// console.log(rowData.longitude)
 	};
+	public clearMap = () => {
+		this.setState({
+			mapObj: {
+				coords: {
+					lat: 0,
+					lng: 0
+				},
+				setMarker: false
+			}
+		});
+	};
+
+	public handleClearToDefault = (): void => {
+		this.setState({
+			table: [],
+			headers: [],
+			loaded: false,
+			mapObj: {
+				coords: {
+					lat: 0,
+					lng: 0
+				},
+				setMarker: false
+			}
+		});
+	};
 
 	public render(): JSX.Element {
 		const { table, headers, mapObj } = this.state;
@@ -91,7 +115,7 @@ class Crimes extends Component<Props, IState> {
 					onRowClick={this.onRowClick}
 				/>
 
-				<CrimesMap mapObj={mapObj} />
+				<CrimesMap props={mapObj} />
 			</>
 		);
 	}

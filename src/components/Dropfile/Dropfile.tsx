@@ -1,19 +1,14 @@
 import React, { Component } from "react";
 import Dropzone from "react-dropzone";
-import { Options } from "./utils/Types";
-import { uploadOptions } from "./FiledropUploadOptions";
-
+import { filedropConfig } from "./filedropConfig";
+// types
+import {DropfileState as State}  from "./typesDropfile"
 // Components to be rendered
-import Image from "./Image";
-import Crimes from "./Crimes";
+import Image from "../Image/Image";
+import Crimes from "../Crimes/Crimes";
 
-interface State {
-   acceptedFileTypes: string;
-   acceptedMaxFileSize: number;
-   uploadedFile: string;
-   uploadedMimeType: string;
-   isLoaded: boolean;
-}
+
+
 class Dropfile extends Component<{}, State> {
    constructor(props: {}) {
       super(props);
@@ -40,7 +35,7 @@ class Dropfile extends Component<{}, State> {
    }
    //set accepted file types
    public acceptedFileTypes = (): string => {
-      const uploadFileTypes = uploadOptions.map(el => {
+      const uploadFileTypes = filedropConfig.map(el => {
          return el.acceptedFileTypes;
       });
       return uploadFileTypes.join();
@@ -49,7 +44,7 @@ class Dropfile extends Component<{}, State> {
 
    //set accepted file size
    public acceptedMaxFileSize = (): number => {
-      const uploadFileSizes = uploadOptions.map(el => {
+      const uploadFileSizes = filedropConfig.map(el => {
          return el.maxSize;
       });
       return Math.max(...uploadFileSizes);
@@ -136,7 +131,7 @@ class Dropfile extends Component<{}, State> {
       }
    };
 
-   //return kind of file depends on mime types
+   //return file type depends on mime types
    public fileType = (type?: string): string => {
       if (!type) type = this.state.uploadedMimeType;
 
@@ -149,7 +144,7 @@ class Dropfile extends Component<{}, State> {
 
          if (acceptedFileTypes.includes(type)) return true;
       }
-      const uploadFileType: any = uploadOptions.filter(filterByID);
+      const uploadFileType: any = filedropConfig.filter(filterByID);
 
       return uploadFileType[0].name;
    };

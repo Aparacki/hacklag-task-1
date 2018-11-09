@@ -1,26 +1,27 @@
 import React, { SFC, ReactNode } from "react";
 import GoogleMapReact from "google-map-react";
-import { mapObj } from "./CrimesTypes";
+import { Map } from "./typesCrimes";
 import CrimesMapMarker from "./CrimesMapMarker";
 
 interface Props {
-	mapObj: mapObj;
+	props:Map
 }
 
-const CrimesMap: SFC<Props> = ({ mapObj }) => (
+
+const CrimesMap: SFC<Props>= ({ props }) => (
 	<div style={{ height: "400px", width: "400px" }}>
-		{mapObj.setMarker ? (
+		{props.setMarker ? (
 			<GoogleMapReact
 				bootstrapURLKeys={{
 					key: "AIzaSyDAmm_PlRJxysFHCfi8CAyWgQFRhthTJUs"
 				}}
-				center={mapObj.coords}
+				center={props.coords}
 				defaultCenter={{ lat: 38.55042047, lng: -121.3914158 }}
 				defaultZoom={11}
 			>
 				<CrimesMapMarker
-					lat={mapObj.coords.lat}
-					lng={mapObj.coords.lng}
+					lat={props.coords.lat}
+					lng={props.coords.lng}
 					text={"Kreyser Avrora"}
 				/>
 			</GoogleMapReact>

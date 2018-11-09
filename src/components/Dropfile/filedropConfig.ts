@@ -1,4 +1,4 @@
-export const uploadOptions = [
+export const filedropConfig = [
 	{	name:"image",
 		maxSize: 2500000,
 		acceptedFileTypes:

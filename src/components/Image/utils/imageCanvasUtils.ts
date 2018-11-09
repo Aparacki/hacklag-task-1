@@ -1,4 +1,4 @@
-export function calcOuterRec(ang: number, w: number, h: number):number[] {
+export function calcCropRec(ang: number, w: number, h: number):number[] {
     if (ang > 90 && ang < 180) {
         ang = 90 - Math.abs(90 - ang);
     }

@@ -3,18 +3,11 @@ import ImageCanvas from "./ImageCanvas";
 import {
    base64StringtoFile,
    downloadBase64File,
-   extractImageFileExtensionFromBase64,
-   image64toCanvasRef
-} from "./utils/ImageUtils";
+   extractImageFileExtensionFromBase64
+} from "./utils/imageUtils";
 
-import { image as imageUploadOptions } from "./utils/UploadOptions";
-
-import { ImageState as State } from "./ImageTypes";
-
-interface Props {
-   imgSrc: any;
-   imgType: any;
-}
+// types
+import { ImageState as State, ImageProps as Props } from "./typesImage";
 
 class Image extends Component<Props, State> {
    constructor(props: Props) {
@@ -31,6 +24,7 @@ class Image extends Component<Props, State> {
    public componentDidUpdate = () => {
       // console.log("_image did update")
    };
+
    public componentWillUnmount = () => {
       // console.log("_image will unmount")
       this.handleClearToDefault();
@@ -40,7 +34,7 @@ class Image extends Component<Props, State> {
    public loadImageHandler = (e: any) => {
       const myImage: any = e.target;
       const { imgSrc, imgType } = this.props;
-      console.log(imgSrc)
+      // console.log(imgSrc);
       const size = [myImage.naturalWidth, myImage.naturalHeight];
 
       this.setState({
@@ -50,7 +44,7 @@ class Image extends Component<Props, State> {
    };
 
    // transform full size canvas to file and download it
-   public downloadHandle = () => {
+   public handleDownload = ():void => {
       const canvas: any = this.fullCanvasRef.current;
       const imageData64: string | null = canvas.toDataURL(this.props.imgType);
       const imgExt = extractImageFileExtensionFromBase64(imageData64);
@@ -75,8 +69,8 @@ class Image extends Component<Props, State> {
                      img={this.state}
                      imgRef={this.imageRef as any}
                      fullCanvasRef={this.fullCanvasRef as any}
+                     handleDownload={this.handleDownload}
                   >
-                     <button onClick={this.downloadHandle}> Download</button>
                   </ImageCanvas>
                </>
             ) : null}
