@@ -11,7 +11,7 @@ interface State {
    acceptedFileTypes: string;
    acceptedMaxFileSize: number;
    uploadedFile: string;
-   uploadedFileType: string;
+   uploadedMimeType: string;
    isLoaded: boolean;
 }
 class Dropfile extends Component<{}, State> {
@@ -21,7 +21,7 @@ class Dropfile extends Component<{}, State> {
          acceptedFileTypes: "",
          acceptedMaxFileSize: 0,
          uploadedFile: "",
-         uploadedFileType: "",
+         uploadedMimeType: "",
          isLoaded: false
       };
    }
@@ -88,7 +88,6 @@ class Dropfile extends Component<{}, State> {
             alert("This file is not allowed");
             return false;
          }
-         // this.setState({ uploadedFileType: currentFileType });
          return true;
       }
       return false;
@@ -97,8 +96,8 @@ class Dropfile extends Component<{}, State> {
    //create file
    public handleOnDrop = (files: any[], rejectedFiles: any[]): void => {
       this.setState({
-         isLoaded:false
-      })
+         isLoaded: false
+      });
       if (rejectedFiles && rejectedFiles.length > 0)
          this.verifyFile(rejectedFiles);
 
@@ -106,19 +105,30 @@ class Dropfile extends Component<{}, State> {
          const isVerified = this.verifyFile(files);
          if (isVerified) {
             const currentFile: Blob = files[0];
-            var reader = new FileReader();
+            const uploadedMimeType = files[0].type;
+            const reader = new FileReader();
 
-            reader.readAsDataURL(currentFile);
+            switch (this.fileType(uploadedMimeType)) {
+               case "image":
+                  reader.readAsDataURL(currentFile);
+                  break;
+               case "csv":
+                  reader.readAsText(currentFile);
+                  break;
+               default:
+                  reader.readAsDataURL(currentFile);
+            }
 
             reader.onload = (e: ProgressEvent | any) => {
                const uploadedFile = e.target.result;
-               const uploadedFileType = files[0].type;
+
                this.setState({
                   uploadedFile,
-                  uploadedFileType,
-                  isLoaded:true
+                  uploadedMimeType,
+                  isLoaded: true
                });
             };
+
             reader.onerror = function(e) {
                alert("Error while uploading");
             };
@@ -126,9 +136,9 @@ class Dropfile extends Component<{}, State> {
       }
    };
 
-   //return "name" file from options to decide which component should be rendered
-   public suitableFileTypeComponent = (): string => {
-      const { uploadedFileType } = this.state;
+   //return kind of file depends on mime types
+   public fileType = (type?: string): string => {
+      if (!type) type = this.state.uploadedMimeType;
 
       function filterByID(item: any) {
          const acceptedFileTypes: any = item.acceptedFileTypes
@@ -137,7 +147,7 @@ class Dropfile extends Component<{}, State> {
                return item.trim();
             });
 
-         if (acceptedFileTypes.includes(uploadedFileType)) return true;
+         if (acceptedFileTypes.includes(type)) return true;
       }
       const uploadFileType: any = uploadOptions.filter(filterByID);
 
@@ -150,13 +160,14 @@ class Dropfile extends Component<{}, State> {
          acceptedFileTypes: "",
          acceptedMaxFileSize: 0,
          uploadedFile: "",
-         uploadedFileType: "",
+         uploadedMimeType: "",
+         isLoaded: false
       });
       // this.fileInputRef.current.value = null
    };
 
    public render(): JSX.Element {
-      const { uploadedFile, uploadedFileType, isLoaded } = this.state;
+      const { uploadedFile, uploadedMimeType, isLoaded } = this.state;
       return (
          <>
             {this.state.acceptedFileTypes ? (
@@ -180,16 +191,21 @@ class Dropfile extends Component<{}, State> {
                   </Dropzone>
                   {isLoaded
                      ? (() => {
-                          switch (this.suitableFileTypeComponent()) {
+                          switch (this.fileType()) {
                              case "image":
                                 return (
                                    <Image
                                       imgSrc={uploadedFile}
-                                      imgSrcExt={uploadedFileType}
+                                      imgType={uploadedMimeType}
                                    />
                                 );
                              case "csv":
-                                return <Crimes />;
+                                return (
+                                   <Crimes
+                                      csvSrc={uploadedFile}
+                                      csvType={uploadedMimeType}
+                                   />
+                                );
                              default:
                                 null;
                           }

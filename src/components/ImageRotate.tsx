@@ -1,28 +1,50 @@
-import React, { SFC, ReactNode } from "react";
+import React, { Component } from "react";
 import Typography from "@material-ui/core/Typography";
 import Slider from "@material-ui/lab/Slider";
 
 
 interface Props {
-	value:number;
-	onChange(e: any, value: number): void;
+	onChange(angle: number): void;	
+	onDragEnd(angle: number): void;	
 }
+class ImageRotate extends Component<Props, {value:number}> {
+	constructor(props:Props){
+		super(props)
+		this.state = {
+			value:0
+		}
+	}
+	public handleChange = (e:any,value:number) => {
+		this.setState({
+			value
+		},() => {
+console.log("nahdle CHANGE ", value )
+			this.props.onChange(value)})
 
-const ImageRotate: SFC<Props> = ({ value, onChange }) => (
-	<>
-		<Typography id="label">
-			Rotate {value}
-			deg
+	}
+	public handleDragEnd = () => {
+		console.log("nahdle end ", this.state.value )
+		this.props.onDragEnd(this.state.value)
+	}	
+   public render(): JSX.Element {
+      return (
+         <>
+         <Typography id="label">
+			Rotate {this.state.value}deg
 		</Typography>
 		<Slider
 			min={0}
 			max={360}
-			value={value}
+			value={this.state.value}
 			aria-labelledby="label"
 			step={1}
-			onChange={onChange}
+			onChange={this.handleChange}
+			onDragEnd={this.handleDragEnd}
 		/>
-	</>
-);
+         </>
+         )
+         }	
+}
+
 
 export default ImageRotate;

@@ -10,74 +10,78 @@ import {
 import { image as imageUploadOptions } from "./utils/UploadOptions";
 
 import { ImageState as State } from "./ImageTypes";
+
 interface Props {
    imgSrc: any;
-   imgSrcExt: any;
+   imgType: any;
 }
+
 class Image extends Component<Props, State> {
    constructor(props: Props) {
       super(props);
       this.state = {
          imgSrc: "",
-         imgSrcExt: "",
          imgSize: [0, 0]
       };
    }
 
    private imageRef = React.createRef<HTMLImageElement>();
+   private fullCanvasRef = React.createRef<HTMLCanvasElement>();
 
+   public componentDidUpdate = () => {
+      // console.log("_image did update")
+   };
+   public componentWillUnmount = () => {
+      // console.log("_image will unmount")
+      this.handleClearToDefault();
+   };
+
+   // Load image and get its properties
    public loadImageHandler = (e: any) => {
-      const myImage: any = e.target
-      const { imgSrc, imgSrcExt } = this.props;
+      const myImage: any = e.target;
+      const { imgSrc, imgType } = this.props;
+      console.log(imgSrc)
       const size = [myImage.naturalWidth, myImage.naturalHeight];
 
       this.setState({
          imgSrc,
-         imgSrcExt,
          imgSize: size
       });
    };
 
-   public componentDidUpdate = () => {
-         console.log("_image did update")
-   }
-   public componentWillUnmount = () => {
-         console.log("_image will unmount")
-
-      this.handleClearToDefault()
-   }
+   // transform full size canvas to file and download it
+   public downloadHandle = () => {
+      const canvas: any = this.fullCanvasRef.current;
+      const imageData64: string | null = canvas.toDataURL(this.props.imgType);
+      const imgExt = extractImageFileExtensionFromBase64(imageData64);
+      const myFilename = "previewFile." + imgExt;
+      const myNewCroppedFile = base64StringtoFile(imageData64, myFilename);
+      downloadBase64File(imageData64, myFilename);
+   };
 
    public handleClearToDefault = (): void => {
-      // if (e) e.preventDefault()
       this.setState({
          imgSrc: "",
-         imgSrcExt: "",
          imgSize: [0, 0]
       });
-      // this.fileInputRef.current.value = null
    };
 
-   public handleDownloadClick = (imageData64: any): void => {
-      // e.preventDefault();
-      // crop canvas size to fit the image
-      // const imageData64 = canvas.toDataURL("image/" + this.state.imgSrcExt);
-      const myFilename = "previewFile." + this.state.imgSrcExt;
-      // file to be uploaded
-      const myNewCroppedFile = base64StringtoFile(imageData64, myFilename);
-      // console.log(myNewCroppedFile);
-      // download file
-      downloadBase64File(imageData64, myFilename);
-      // this.handleClearToDefault()
-   };
    public render(): JSX.Element {
       return (
          <>
-            {this.state.imgSrc ? (
-                  <ImageCanvas img={this.state} imgRef={this.imageRef as any}/>
-            ) : (
-               null
+            {this.state.imgSize[0] > 0 ? (
+               <>
+                  <ImageCanvas
+                     img={this.state}
+                     imgRef={this.imageRef as any}
+                     fullCanvasRef={this.fullCanvasRef as any}
+                  >
+                     <button onClick={this.downloadHandle}> Download</button>
+                  </ImageCanvas>
+               </>
+            ) : null}
             )}
-            )}
+            <canvas ref={this.fullCanvasRef} style={{ display: "none" }} />
             <img
                ref={this.imageRef}
                src={this.props.imgSrc}

@@ -4,11 +4,14 @@ import CrimesTable from "./CrimesTable";
 import CrimesMap from "./CrimesMap";
 import { IState, mapObj } from "./CrimesTypes";
 
-import { verifyFile } from "./utils/Utils";
 import { csv as csvUploadOptions } from "./utils/UploadOptions";
 
-class Crimes extends Component<{}, IState> {
-	constructor(props: {}) {
+interface Props {
+	csvSrc: any;
+	csvType: any;
+}
+class Crimes extends Component<Props, IState> {
+	constructor(props: Props) {
 		super(props);
 		this.state = {
 			table: [],
@@ -23,30 +26,12 @@ class Crimes extends Component<{}, IState> {
 			}
 		};
 	}
-	public handleOnDrop = (files: any[], rejectedFiles: any[]): void => {
-		if (rejectedFiles && rejectedFiles.length > 0) {
-			verifyFile(rejectedFiles, csvUploadOptions);
-		}
-
-		if (files && files.length > 0) {
-			const isVerified = verifyFile(files, csvUploadOptions);
-			if (isVerified) {
-				const currentFile: Blob = files[0];
-				const myFileItemReader = new FileReader();
-				// throw new Error('Required')
-				myFileItemReader.onload = this.loadHandler;
-				myFileItemReader.readAsText(currentFile);
-			}
-		}
-	};
-
-	public loadHandler = (e: any) => {
-		let csv = e.target.result;
-		this.processData(csv);
-	};
-
-	public loadErrorHandler = (e: any) => {
-	};
+   public componentDidMount = () => {
+      // console.log("_csv did update")
+      const {csvSrc} = this.props
+      console.log(csvSrc)
+      this.processData(csvSrc);
+   };
 
 	public processData = (csv: any) => {
 		let allTextLines = csv.split(/\r|\n|\r/);
@@ -100,32 +85,12 @@ class Crimes extends Component<{}, IState> {
 		const { table, headers, mapObj } = this.state;
 		return (
 			<>
-				<Dropzone
-					onDrop={this.handleOnDrop}
-					accept={csvUploadOptions.acceptedFileTypes}
-					multiple={false}
-					maxSize={csvUploadOptions.maxSize}
-					style={{
-						width: "400px",
-						height: "400px",
-						borderWidth: "2px",
-						borderColor: 'rgb(102, 102, 102")',
-						borderStyle: "dashed",
-						borderRadius: "5px",
-						background: "#cbebeb"
-					}}
-				>
-					Drop CSV
-				</Dropzone>
-				{table.length > 0 ? (
-					<CrimesTable
-						headers={headers}
-						table={table}
-						onRowClick={this.onRowClick}
-					/>
-				) : (
-					<span>no loaded</span>
-				)}
+				<CrimesTable
+					headers={headers}
+					table={table}
+					onRowClick={this.onRowClick}
+				/>
+
 				<CrimesMap mapObj={mapObj} />
 			</>
 		);
