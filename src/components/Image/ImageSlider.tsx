@@ -6,17 +6,18 @@ import "../../App.css"
 
 interface Props {
 	value:number;
+	max:number;
 	onChange(e: any, value: number): void;
 }
 
-const ImageRotate: SFC<Props> = ({ value, onChange }) => (
+const ImageSlider: SFC<Props> = ({ value, max, onChange, children }) => (
 	<>
 		<Typography id="label">
-			Grayscale
+			{children}
 		</Typography>
 		<Slider className="slider"
 			min={0}
-			max={100}
+			max={max}
 			value={value}
 			aria-labelledby="label"
 			step={1}
@@ -25,4 +26,4 @@ const ImageRotate: SFC<Props> = ({ value, onChange }) => (
 	</>
 );
 
-export default ImageRotate;
+export default ImageSlider;

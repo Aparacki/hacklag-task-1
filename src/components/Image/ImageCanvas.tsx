@@ -4,6 +4,7 @@ import { calcCropRec, calcPrevImgSize } from "./utils/imageCanvasUtils";
 
 import ImageRotate from "./ImageRotate";
 import ImageGrayscale from "./ImageGrayscale";
+import ImageSlider from "./ImageSlider";
 import ImagePixels from "./ImagePixels";
 
 // css
@@ -25,6 +26,8 @@ class ImageCanvas extends Component<Props, State> {
          prevSize: [0, 0],
          angle: 0,
          grayscale: 0,
+         invert:0,
+         huerotate:0,
          pixels: {
             w: 0,
             h: 0,
@@ -77,6 +80,12 @@ class ImageCanvas extends Component<Props, State> {
       this.setState({ grayscale });
    };
 
+   public handleInvert = (e: any, invert: number): void => {
+      this.setState({ invert });
+   };
+   public handleHuerotate = (e: any, huerotate: number): void => {
+      this.setState({ huerotate });
+   };
    // calculate size of fullsize image
    public handlePixels = (
       angle: number = 360
@@ -94,7 +103,7 @@ class ImageCanvas extends Component<Props, State> {
 
    // draw canvas
    public handleCanvas = (canvasRef: any, fullsize?: boolean): void => {
-      const { prevSize, angle, grayscale } = this.state;
+      const { prevSize, angle, grayscale, invert, huerotate } = this.state;
       let size = prevSize;
       if (fullsize) {
          size = this.props.img.imgSize;
@@ -111,7 +120,8 @@ class ImageCanvas extends Component<Props, State> {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.translate(canvas.width / 2, canvas.height / 2);
       ctx.rotate((angle * Math.PI) / 180);
-      ctx.filter = `grayscale(${grayscale}%`;
+      ctx.filter = `grayscale(${grayscale}%) invert(${invert}%) hue-rotate(${huerotate}deg)`;
+      // ctx.filter = `invert(${invert}%)`;
       ctx.translate(-(canvas.width / 2), -(canvas.height / 2));
       ctx.drawImage(
          myImage,
@@ -150,6 +160,8 @@ class ImageCanvas extends Component<Props, State> {
       this.setState({
          angle: 0,
          grayscale: 0,
+         invert:0,
+         huerotate:0,
          pixels
       });
    };
@@ -167,16 +179,42 @@ class ImageCanvas extends Component<Props, State> {
                <Grid item xs={12} sm={6}>
                   <Grid container spacing={24}>
                      <Grid item xs={12}>
-                        <ImageRotate
+                        <ImageSlider
+                           max={360}
                            value={this.state.angle}
                            onChange={this.handleRotate}
-                        />
+                        >
+                           Rotate {this.state.angle}
+                           deg
+                        </ImageSlider>
                      </Grid>
                      <Grid item xs={12}>
-                        <ImageGrayscale
+                        <ImageSlider
+                           max={100}
                            value={this.state.grayscale}
                            onChange={this.handleGrayscale}
-                        />
+                        >
+                           Grayscale {this.state.grayscale}%
+                        </ImageSlider>
+
+                     </Grid>
+                      <Grid item xs={12}>
+                        <ImageSlider
+                           max={100}
+                           value={this.state.invert}
+                           onChange={this.handleInvert}
+                        >
+                           Invert {this.state.invert}%
+                        </ImageSlider>
+                     </Grid>
+                                           <Grid item xs={12}>
+                        <ImageSlider
+                           max={360}
+                           value={this.state.huerotate}
+                           onChange={this.handleHuerotate}
+                        >
+                           Hue-rotate {this.state.huerotate}deg
+                        </ImageSlider>
                      </Grid>
                      <Grid item xs={12}>
                         <ImagePixels value={this.state.pixels} />

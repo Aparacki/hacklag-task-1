@@ -6,6 +6,7 @@ import { DropfileState as State } from "./typesDropfile";
 // Components to be rendered
 import Image from "../Image/Image";
 import Crimes from "../Crimes/Crimes";
+import SimpleModal from "../SimpleModal";
 // css
 import "../../App.css";
 import Grid from "@material-ui/core/Grid";
@@ -105,8 +106,8 @@ class Dropfile extends Component<{}, State> {
       const isVerified = this.verifyFile(files);
       if (isVerified) {
         const currentFile: Blob = files[0];
-        console.log(currentFile);
         const uploadedMimeType = files[0].type;
+
         const dropZoneText =
           files[0].name +
           " - " +
@@ -116,6 +117,7 @@ class Dropfile extends Component<{}, State> {
 
         const reader = new FileReader();
 
+// decide how to read file
         switch (this.fileType(uploadedMimeType)) {
           case "image":
             reader.readAsDataURL(currentFile);
@@ -179,6 +181,7 @@ class Dropfile extends Component<{}, State> {
       dropZoneText,
       isLoaded
     } = this.state;
+    
     return (
       <>
         {this.state.acceptedFileTypes ? (
@@ -197,15 +200,22 @@ class Dropfile extends Component<{}, State> {
                 </Dropzone>
               </Grid>
               <Grid item xs={12} sm={6} md={4} lg={3}>
-                <Button
-                disabled={!isLoaded}
-                  variant="contained"
-                  fullWidth={true}
-                  onClick={this.handleClearToDefault}
-                >
-                  Clear all
-                  <DeleteIcon />
-                </Button>
+                <Grid container spacing={24}>
+                  <Grid item xs={12}>
+                    <SimpleModal />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button
+                      disabled={!isLoaded}
+                      variant="contained"
+                      fullWidth={true}
+                      onClick={this.handleClearToDefault}
+                    >
+                      Clear all
+                      <DeleteIcon />
+                    </Button>
+                  </Grid>
+                </Grid>
               </Grid>
               {isLoaded
                 ? (() => {

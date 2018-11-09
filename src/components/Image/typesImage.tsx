@@ -12,6 +12,8 @@ export interface ImageCanvasState {
    prevSize: number[];
    angle: number;
    grayscale: number;
+   invert:number;
+   huerotate:number;
    pixels: Pixels;
 }
 
