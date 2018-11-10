@@ -37,7 +37,6 @@ class Crimes extends Component<Props, State> {
 		let allTextLines = csv.split(/\r|\n|\r/);
 		let headers = allTextLines[0].split(",");
 		let headersLength = headers.join('').length
-		console.log(headersLength)
 		let csvArray = [];
 
 		for (let i = 1; i < allTextLines.length; i++) {
