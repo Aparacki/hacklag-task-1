@@ -30,7 +30,7 @@ class Crimes extends Component<Props, State> {
 	public componentDidMount = () => {
 		const { csvSrc } = this.props;
 		this.processData(csvSrc);
-		console.log("_csv did update");
+		// console.log("_csv did update");
 	};
 
 	public processData = (csv: any) => {

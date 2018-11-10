@@ -7,7 +7,7 @@ interface CrimesMapMarkerProps {
 }
 const CrimesMapMarker = ({ lat, lng, text }: CrimesMapMarkerProps) => (
 	<div>
-		<b>test</b>
+		<h4>CRIME PLACE</h4>
 		<img
 			style={{ width: "30px", height: "50px" }}
 			src="https://www.abyssantosuitesandspa.com/wp-content/uploads/2017/02/google-maps-marker-for-residencelamontagne-hi.png"

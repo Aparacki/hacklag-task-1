@@ -1,15 +1,10 @@
 import React, { SFC, ReactNode  } from "react";
 import { Column, Table } from "react-virtualized";
 import "react-virtualized/styles.css";
+import {CrimeTableProps as Props} from "./typesCrimes"
 import "../../App.css"
 
-interface Props { 
-headers:string[];
-table:any[];
-headersLength:number;
-tableWidth:number;
-onRowClick:any;
-}
+
 
 const CrimesTable: SFC<Props> = ({ headers, headersLength, tableWidth, table, onRowClick}) => (
 	<Table

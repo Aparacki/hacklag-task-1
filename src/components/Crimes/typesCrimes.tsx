@@ -11,6 +11,14 @@ export interface CrimeProps {
 	csvType: string;
 }
 
+export interface CrimeTableProps { 
+headers:string[];
+table:any[];
+headersLength:number;
+tableWidth:number;
+onRowClick:any;
+}
+
 export interface Map {
 	coords:Coords;
 	setMarker: boolean;

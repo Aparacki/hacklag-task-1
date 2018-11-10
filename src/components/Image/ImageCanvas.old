@@ -48,7 +48,7 @@ class ImageCanvas extends Component<Props, State> {
    };
 
    public componentDidUpdate = (): void => {
-      // console.log("__canvas didupdate");
+      console.log("__canvas didupdate");
       const { angle, grayscale } = this.state;
       this.handleCanvas(this.previewCanvasRef);
    };
@@ -105,9 +105,9 @@ class ImageCanvas extends Component<Props, State> {
       let size = prevSize;
       if (fullsize) {
          size = this.props.img.imgSize;
-         // console.log("__canvas handle fullsize");
+         console.log("__canvas handle fullsize");
       } else {
-         // console.log("__canvas handle");
+         console.log("__canvas handle");
       }
 
       const canvas = canvasRef.current;
